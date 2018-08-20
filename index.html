@@ -1,0 +1,40 @@
+<html>
+    <head>
+        <title>threejs - basic</title>
+
+        <style>
+            body {
+                margin: 0;
+                overflow: hidden;
+            }
+            canvas {
+                background: blue;
+            }
+        </style>
+    </head>
+    <body>
+        <canvas id="myCanvas"></canvas>
+
+        <script src="three.js"></script>
+
+        <script>
+            var renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('myCanvas')});
+            renderer.setClearColor(0x0000ff);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.setSize(window.innerWidth, window.innerHeight);
+
+            var camera = new THREE.PerspectiveCamera(35, window.innerWidth / window.innerHeight, 0.1, 3000);
+
+            var scene = new THREE.Scene();
+
+            var geometry = new THREE.BoxGeometry(100, 100, 100);
+            var material = new THREE.MeshBasicMaterial();
+            var mesh = new THREE.Mesh(geometry, material);
+            mesh.position.set(0, 0, -1000);
+
+            scene.add(mesh);
+
+            renderer.render(scene, camera);
+        </script>
+    </body>
+</html>
