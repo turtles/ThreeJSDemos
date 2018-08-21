@@ -1,68 +1,8 @@
 <html>
     <head>
-        <title>threejs - basic</title>
-
-        <style>
-            body {
-                margin: 0;
-                overflow: hidden;
-            }
-            canvas {
-                background: blue;
-            }
-        </style>
+        <title>Parakeet's threejs demos</title>
     </head>
     <body>
-        <canvas id="myCanvas"></canvas>
-
-        <script src="three.js"></script>
-
-        <script>
-            var scene, camera, renderer;
-            var mesh;
-            
-            function initRenderer() {
-                renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('myCanvas'), antialias: true });
-                renderer.setClearColor(0x0000ff);
-                renderer.setPixelRatio(window.devicePixelRatio);
-                renderer.setSize(window.innerWidth, window.innerHeight);
-            }
-
-            function initCamera() {
-                camera = new THREE.PerspectiveCamera(35, window.innerWidth / window.innerHeight, 0.1, 3000);
-            }
-
-            function initScene() {
-                scene = new THREE.Scene();
-                var geometry = new THREE.BoxGeometry(100, 100, 100);
-                var material = new THREE.MeshNormalMaterial();
-                mesh = new THREE.Mesh(geometry, material);
-                mesh.position.set(0, 0, -1000);
-                mesh.rotation.set(0,100,100);
-
-                scene.add(mesh);
-            }
-
-
-            function rotateCube() {
-                const speed = 0.01;
-                mesh.rotation.x += speed * 2;
-                mesh.rotation.y += speed;
-                mesh.rotation.z += speed * 2;
-            }
-
-            function render() {
-                requestAnimationFrame(render);
-                rotateCube();
-                renderer.render(scene, camera);
-            }
-
-            initRenderer();
-            initCamera();
-            initScene();
-
-            render();
-
-        </script>
+      <a href='demos/rotating-cube/'>Rotating Cube</a>
     </body>
 </html> 
