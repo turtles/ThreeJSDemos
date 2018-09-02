@@ -1,0 +1,121 @@
+<html>
+    <head>
+        <title>threejs - shapes</title>
+		<meta charset="utf-8">
+        <style>
+            body {
+                margin: 0;
+                overflow: hidden;
+                background: black;
+            }
+            canvas {
+                background: black;
+            }
+        </style>
+    </head>
+    <body>
+        <canvas id="myCanvas"></canvas>
+
+        <script src="../../lib/three.js"></script>
+        <script src="../../lib/OrbitControls.js"></script>
+
+        <script>
+            var scene, camera, renderer;
+            var meshList;
+            var controls;
+            
+            function initRenderer() {
+                renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('myCanvas'), antialias: true });
+                renderer.setClearColor(0x000000);
+                renderer.setPixelRatio(window.devicePixelRatio);
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            }
+
+            function initCamera() {
+                camera = new THREE.PerspectiveCamera(35, window.innerWidth / window.innerHeight, 0.1, 3000);
+
+                controls = new THREE.OrbitControls( camera, renderer.domElement );
+				controls.target.set( 0, 0, -1000 );
+				controls.update();
+            }
+
+            function initScene() {
+                scene = new THREE.Scene();
+
+                let mesh, material;
+
+                material = new THREE.MeshNormalMaterial();
+                
+                meshList = [];
+                mesh = new THREE.Mesh(new THREE.TorusBufferGeometry( 50, 20, 20, 20 ), material);
+                mesh.position.set(0, 0, -1000);
+                meshList.push(mesh);
+
+                mesh = new THREE.Mesh(new THREE.SphereBufferGeometry( 75, 20, 10 ), material );
+                mesh.position.set(0, 200, -1000);
+                meshList.push(mesh);
+
+                mesh = new THREE.Mesh(new THREE.BoxBufferGeometry( 100, 100, 100, 4, 4, 4 ), material );
+                mesh.position.set(0, -200, -1000);
+                meshList.push(mesh);
+
+                mesh = new THREE.Mesh(new THREE.IcosahedronBufferGeometry( 75, 1 ), material);
+                mesh.position.set(-200, 0, -1000);
+                meshList.push(mesh);
+
+                mesh = new THREE.Mesh(new THREE.OctahedronBufferGeometry( 75, 2 ), material );
+                mesh.position.set(-200, 200, -1000);
+                meshList.push(mesh);
+
+                mesh = new THREE.Mesh(new THREE.TorusKnotBufferGeometry( 50, 10, 50, 20 ), material );
+                mesh.position.set(-200, -200, -1000);
+                meshList.push(mesh);
+
+                mesh = new THREE.Mesh(new THREE.PlaneBufferGeometry( 100, 100, 4, 4 ), material);
+                mesh.position.set(200, 0, -1000);
+                meshList.push(mesh);
+
+                mesh = new THREE.Mesh(new THREE.CircleBufferGeometry( 50, 20, 0, Math.PI * 2 ), material );
+                mesh.position.set(200, 200, -1000);
+                meshList.push(mesh);
+
+                mesh = new THREE.Mesh(new THREE.RingBufferGeometry( 30, 60, 20, 5, 0, Math.PI * 2 ), material );
+                mesh.position.set(200, -200, -1000);
+                meshList.push(mesh);
+                
+                for (let i = 0; i < meshList.length; i++) {
+                    scene.add(meshList[i]);
+                }
+            }
+            
+            function rotateShapes() {
+                const speed = 0.02;
+                for (let i = 0; i < meshList.length; i++) {
+                    meshList[i].rotation.x += speed;
+                    meshList[i].rotation.y += speed;
+                }
+            }
+
+            function render() {
+                requestAnimationFrame(render);
+                rotateShapes();
+                renderer.render(scene, camera);
+            }
+            
+            function onWindowResize() {
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+				renderer.setSize( window.innerWidth, window.innerHeight );
+            }
+            
+            initRenderer();
+            initCamera();
+            initScene();
+            
+            window.addEventListener( 'resize', onWindowResize, false );
+
+            render();
+
+        </script>
+    </body>
+</html> 
