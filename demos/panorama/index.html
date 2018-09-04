@@ -1,12 +1,6 @@
+<!DOCTYPE html>
 <html>
     <head>
-        <!--
-            Panoramic photo credit:
-                "Heimaey, harbour entrance" - Brian Digital
-                Released under Attribution-NonCommercial-ShareAlike 2.0 Generic (CC BY-NC-SA 2.0)
-                (Originally found at https://www.flickr.com/photos/brian_digital/41073561590/)
-        -->
-
         <title>threejs - panorama</title>
 		<meta charset="utf-8">
         <style>
@@ -18,6 +12,12 @@
             canvas {
                 background: black;
             }
+            .info {
+                position: absolute;
+                top: 1em;
+                width: 100%;
+                text-align: center;
+            }
         </style>
     </head>
     <body>
@@ -27,8 +27,11 @@
         <script src="../../lib/controls/PanoramaControls.js"></script>
 
         <script>
-            // https://github.com/mrdoob/three.js/blob/master/examples/webgl_panorama_equirectangular.html
-            
+            let info = document.createElement('div');
+            info.className = 'info';
+            info.innerHTML = '<p>Panoramic photo credit: "Heimaey, harbour entrance" - Brian Digital<br/>Released under Attribution-NonCommercial-ShareAlike 2.0 Generic (CC BY-NC-SA 2.0)<br/><a href="https://www.flickr.com/photos/brian_digital/41073561590/">Source (Flickr)</a></p>';
+            document.body.appendChild(info);
+
             let scene, camera, renderer;
             
             function initRenderer() {
