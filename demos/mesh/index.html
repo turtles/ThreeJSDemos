@@ -1,0 +1,109 @@
+<html>
+    <head>
+        <title>threejs - mesh (fbx)</title>
+		<meta charset="utf-8">
+        <style>
+            body {
+                margin: 0;
+                overflow: hidden;
+                background: black;
+                background: black;
+            }
+            canvas {
+                background: black;
+            }
+        </style>
+    </head>
+    <body>
+        <canvas id="myCanvas"></canvas>
+
+        <script src="../../lib/three.js"></script>
+        <script src="../../lib/OrbitControls.js"></script>
+		<script src="../../lib/Inflate.min.js"></script>
+		<script src="../../lib/loaders/FBXLoader.js"></script>
+
+        <script>
+            var scene, camera, renderer;
+            var controls;
+            
+            function initRenderer() {
+                renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('myCanvas'), antialias: true });
+                renderer.setClearColor(0x000000);
+                renderer.setPixelRatio(window.devicePixelRatio);
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            }
+
+            function initCamera() {
+                camera = new THREE.PerspectiveCamera(35, window.innerWidth / window.innerHeight, 0.1, 3000);
+
+                controls = new THREE.OrbitControls( camera, renderer.domElement );
+				controls.target.set( 0, 0, -1000 );
+				controls.update();
+            }
+
+            function initScene() {
+                scene = new THREE.Scene();
+
+				scene.background = new THREE.Color( 0x6C7C6F );
+
+                // Lights
+                light = new THREE.HemisphereLight( 0xffffff, 0x444444 );
+				light.position.set( 0, 200, 0 );
+				scene.add( light );
+				light = new THREE.DirectionalLight( 0xffffff );
+				light.position.set( 0, 200, 100 );
+				light.castShadow = true;
+				light.shadow.camera.top = 180;
+				light.shadow.camera.bottom = -100;
+				light.shadow.camera.left = -120;
+				light.shadow.camera.right = 120;
+                scene.add( light );
+                
+                // Load fbx
+                let loader = new THREE.FBXLoader();
+                loader.load( '../../resources/models/stanford-bunny.fbx', function (mesh) {
+                    // Apply material to all submeshes
+                    let material = new THREE.MeshPhongMaterial({
+                        color: 0x666666,
+                        specular: 0xffffff,
+                        shininess: 5
+                    });
+                    
+                    mesh.traverse( function (child) {
+                        if (child.isMesh) {
+                            child.castShadow = true;
+                            child.receiveShadow = true;
+                            child.material = material;
+                        }
+                    });
+
+                    mesh.material = material;
+
+                    // Add to scene
+                    mesh.position.set(0, 0, -1000);
+                    scene.add(mesh);
+                })
+            }
+
+            function render() {
+                requestAnimationFrame(render);
+                renderer.render(scene, camera);
+            }
+            
+            function onWindowResize() {
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+				renderer.setSize( window.innerWidth, window.innerHeight );
+            }
+            
+            initRenderer();
+            initCamera();
+            initScene();
+            
+            window.addEventListener( 'resize', onWindowResize, false );
+
+            render();
+
+        </script>
+    </body>
+</html> 
