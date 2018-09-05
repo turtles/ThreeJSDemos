@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>three.js webgl - plane flying</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<style>
+			body {
+				font-family: Monospace;
+				font-size: 13px;
+				text-align: center;
+				margin: 0px;
+				background-color: #fff;
+				overflow: hidden;
+			}
+			.info{
+				position: absolute;
+				z-index: 1;
+				width: 100%;
+				top: 1em;
+				text-align: center;
+			}
+		</style>
+	</head>
+<body>
+	<div class="info">
+		<span style="background-color: black; color:white; padding: 0.5em">Arrow keys to move</span>
+	</div>
+    <script src="../../lib/three.js"></script>
+    <script src="../../lib/controls/OrbitControls.js"></script>
+	<script src="../../lib/Inflate.min.js"></script>
+	<script src="../../lib/loaders/FBXLoader.js"></script>
+	<script>
+		var renderer, scene, camera;
+		var controls, group;
+		var plane;
+		var propeller;
+		var keys = { Left: 37, Up: 38, Right: 39, Down: 40 };
+		var keyStates = { Left: false, Right: false, Up: false, Down: false};
+		var rings = [];
+		const ringRotationSpeed = 0.01;
+		var circleSpriteMaterial;
+		var litCircleSpriteMaterial;
+		const ringRadius = 4;
+		const ringMoveSpeed = .25;
+
+		init();
+		animate();
+
+		function init() {
+			// init renderer
+			renderer = new THREE.WebGLRenderer( { antialias: true } );
+			renderer.setPixelRatio( window.devicePixelRatio );
+			renderer.setSize( window.innerWidth, window.innerHeight );
+			document.body.appendChild( renderer.domElement );
+			// init scene
+			scene = new THREE.Scene();
+			scene.background = new THREE.Color( 0x659CEF );
+			group = new THREE.Group();
+			scene.add( group );
+			// init camera
+			camera = new THREE.PerspectiveCamera( 50, window.innerWidth / window.innerHeight, 1, 1000 );
+			camera.position.set( 15, 15, 15 );
+			camera.lookAt( scene.position );
+			controls = new THREE.OrbitControls( camera, renderer.domElement );
+			controls.enableRotate = true;
+			controls.enableKeys = false;
+			// Lights
+			light = new THREE.DirectionalLight( 0xffffff );
+			light.position.set( 0, 200, 100 );
+			light.castShadow = true;
+			scene.add(light);
+
+			// add sprites
+			let offset = 0;
+			let sprite;
+			const numRings = 2;
+			const numPoints = 16;
+			let circleSpriteMap, litCircleSpriteMap;
+			circleSpriteMap = new THREE.TextureLoader().load("../../resources/textures/redcircle.png");
+			litCircleSpriteMap = new THREE.TextureLoader().load("../../resources/textures/yellowcircle.png");
+			circleSpriteMaterial = new THREE.SpriteMaterial( { map: circleSpriteMap, color: 0xffffff } );
+			litCircleSpriteMaterial = new THREE.SpriteMaterial( { map: litCircleSpriteMap, color: 0xffffff } );
+			
+			for (let j = 0; j < numRings; ++j) {
+				let ringGroup = new THREE.Group();
+				for (let i = 0; i < numPoints; ++i) {
+					sprite = new THREE.Sprite( circleSpriteMaterial );
+					sprite.position.set(
+						ringRadius*Math.sin(i/numPoints*Math.PI*2),
+						ringRadius*Math.cos(i/numPoints*Math.PI*2),
+						0);
+					ringGroup.add(sprite);
+				}
+				ringGroup.position.z = offset;
+				offset += 50;
+				scene.add(ringGroup);
+				rings.push(ringGroup);
+			}
+			// Load plane
+			let loader = new THREE.FBXLoader();
+			loader.load( '../../resources/models/Plane.fbx', function (mesh) {
+				mesh.traverse( function (child) {
+                        if (child.isMesh) {
+							child.scale.x = child.scale.z = child.scale.y*2; // fix scaling problem in model
+							if (child.name === "Propeller") {
+								propeller = child;
+							}
+                            child.material.shininess = 0;
+                        }
+                    });
+				scene.add(mesh);
+				plane = mesh;
+			})
+
+			window.addEventListener( 'resize', onWindowResize, false );
+			window.addEventListener( 'keydown', onKeyDown, false );
+			window.addEventListener( 'keyup', onKeyUp, false );
+		}
+		function animate() {
+			renderer.render( scene, camera );
+			
+			for (let i = 0; i < rings.length; ++i) {
+				let ring = rings[i];
+				ring.rotation.z += ringRotationSpeed;
+				if (ring.position.z > 50) {
+					ring.position.z -= 100;
+					ring.position.x = Math.random()*20 - 10;
+					for (let j = 0; j < ring.children.length; ++j) {
+						ring.children[j].material = circleSpriteMaterial;
+					}
+				}
+				ring.position.z += ringMoveSpeed;
+
+				if (plane) {
+					if (Math.abs(plane.position.z - ring.position.z) < 0.2) {
+						if (ringRadius > Math.sqrt(Math.pow(plane.position.x - ring.position.x, 2) + Math.pow(plane.position.y - ring.position.y, 2))) {
+							// ring.scale.x = 0.1;
+							if (ring.children[0].material === circleSpriteMaterial) {
+								for (let j = 0; j < ring.children.length; ++j) {
+									ring.children[j].material = litCircleSpriteMaterial;
+								}
+							}
+						}
+					}
+				}
+			}
+			planeMovement();
+			if (propeller) {
+				propeller.rotation.y += 0.2;
+			}
+
+			requestAnimationFrame( animate );
+		}
+		function planeMovement() {
+			if (!plane) return;
+			const moveSpeed = 0.1;
+			if (keyStates.Up) {
+				plane.position.y += moveSpeed;
+				plane.rotation.x = THREE.Math.lerp(plane.rotation.x, 0.25, 0.2);
+			}
+			if (keyStates.Down) {
+				plane.position.y -= moveSpeed;
+				plane.rotation.x = THREE.Math.lerp(plane.rotation.x, -0.25, 0.2);
+			}
+			if (keyStates.Left) {
+				plane.position.x -= moveSpeed;
+				plane.rotation.y = THREE.Math.lerp(plane.rotation.y, 0.1, 0.1);
+				plane.rotation.z = THREE.Math.lerp(plane.rotation.z, 0.2, 0.1);
+			} else if (keyStates.Right) {
+				plane.position.x += moveSpeed;
+				plane.rotation.y = THREE.Math.lerp(plane.rotation.y, -0.1, 0.1);
+				plane.rotation.z = THREE.Math.lerp(plane.rotation.z, -0.2, 0.1);
+			} else {
+				plane.rotation.x = THREE.Math.lerp(plane.rotation.x, 0, 0.1);
+				plane.rotation.y = THREE.Math.lerp(plane.rotation.y, 0, 0.1);
+				plane.rotation.z = THREE.Math.lerp(plane.rotation.z, 0, 0.1);
+			}
+		}
+		function onKeyDown( event ) {
+			switch ( event.keyCode ) {
+				case keys.Up: keyStates.Up = true; break;
+				case keys.Down: keyStates.Down = true; break;
+				case keys.Left: keyStates.Left = true; break;
+				case keys.Right: keyStates.Right = true; break;
+			}
+		}
+		function onKeyUp( event ) {
+			switch ( event.keyCode ) {
+				case keys.Up: keyStates.Up = false; break;
+				case keys.Down: keyStates.Down = false; break;
+				case keys.Left: keyStates.Left = false; break;
+				case keys.Right: keyStates.Right = false; break;
+			}
+		}
+		function onWindowResize() {
+			camera.aspect = window.innerWidth / window.innerHeight;
+			camera.updateProjectionMatrix();
+			renderer.setSize( window.innerWidth, window.innerHeight );
+		}
+	</script>
+</body>
+</html>
